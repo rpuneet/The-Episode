@@ -16,11 +16,13 @@ class Directory:
     '''
     def __init__(self , path):
         self.path = path
-        
+        self.name = ""
         # Check for any problem in openning the directory. (Like - Permission denied.)
         try:
             os.listdir(self.path)
-        except:
+            self.name = os.path.basename(self.path)
+        except IOError as e:
+            print (e)
             self.path = None
             
         
@@ -65,7 +67,6 @@ class Directory:
         size = 0
         directory_count = 0
         file_count = 0
-        
         for directory in directory_list[1:]:
             tup_obj = directory.size()
             file_count += tup_obj[2]
@@ -78,10 +79,4 @@ class Directory:
             size += file.size()
             file_count += 1
         
-        return size , directory_count , file_count
-
-x = input("Enter the Path : ")
-x = Directory(x)
-print(x.size())
-
-        
+        return (size , directory_count , file_count)

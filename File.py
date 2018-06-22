@@ -2,6 +2,7 @@
 This module contains a class File which contains information about different files in the directory.
 '''
 
+import os
 
 
 class File:
@@ -17,7 +18,9 @@ class File:
         # Check for any problem in openning the file. (Like - Permission denied.)
         try:
             open(self.path , "rb")
-        except:
+            self.name = os.path.basename(self.path)
+        except IOError as e:
+            print (e)
             self.path = None
      
     '''
