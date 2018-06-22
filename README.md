@@ -13,6 +13,7 @@ A Web App which visualises directory informations like size, name, subdirectorie
 
 # How to use?
 Open the WebMain.py by opening it directly or through command line.
+
        >\ py WebMain.py
 This will open a browser which will run a local server.
 It will initially open the folder where current directory is present.
