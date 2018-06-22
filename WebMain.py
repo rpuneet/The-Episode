@@ -22,6 +22,17 @@ app = dash.Dash()           # Dash object.
 current_path = os.getcwd()           # Stores the path of the current directory whose information is displayed.
 number_of_clicks = 0         # Stores the number of clicks on go-back button to check if it is pressed or not.
 
+
+details_template = '''
+### Directory Details
+
+Name : {}\n
+Size : {} {}\n
+Number of Sub Directories : {}\n
+Number of Files : {}\n
+'''
+
+
 # Layout of the app is defined here.
 app.layout = html.Div(children=[
         html.H1(
@@ -50,12 +61,17 @@ app.layout = html.Div(children=[
                         value="Select"
                         )]
                 ),
-        dcc.Graph(
-                    id='subdirectories-bar-graph'
-                 ),
-        dcc.Graph(
-                   id='files-bar-graph'
-                )
+        html.Div(children=[
+                dcc.Markdown( 
+                            id="details" 
+                        ),
+                dcc.Graph(
+                            id='subdirectories-bar-graph'
+                         ),
+                dcc.Graph(
+                           id='files-bar-graph'
+                        )
+            ])
     ])
         
         
@@ -119,6 +135,55 @@ def update_files_graph(directory_path):
                 )
                 
                 
+'''
+This function is used to update the details of the current directory.
+
+Parameters - 
+    (string) directory_path - Contains the path of the directory which is present in directory-path field.
+Return-
+    (figure) Returns a children object which contains the markdown text of the details.
+'''
+@app.callback(  
+        Output("details" , "children"),
+        [Input("directory-path" , "value")])
+def update_directory_details(directory_path):
+    global details_template
+    
+    current_directory = Directory.Directory(directory_path) 
+    
+    dr_name = current_directory.name
+    dr_size = current_directory.size()
+    dr_all_files = dr_size[2]
+    dr_all_subdr = dr_size[1]
+    dr_size , size_type = get_size(dr_size[0])
+    
+    return details_template.format(dr_name , dr_size , size_type , dr_all_subdr , dr_all_files)
+                
+
+"""
+This function assigns a appropriate size type like KB , GB , etc. according to the size in bytes.
+
+Parameters-
+    (int) size_bytes - Size in bytes.
+Return -
+    (int) , (string) - Size after converting to appropriate unit and the unit.
+"""
+def get_size(size_byte):
+    unit = "bytes"
+    current_size = size_byte
+    if(current_size > 1024):
+        unit = "KB"
+        current_size /= 1024.0
+    if(current_size > 1024):
+        unit = "MB"
+        current_size /= 1024.0
+    if(current_size > 1024):
+        unit = "GB"
+        current_size /= 1024.0
+    if(current_size > 1024):
+        unit = "TB"
+        current_size /= 1024.0
+    return current_size , unit
 
 '''
 This function is used to update the sub directory dropdown. It gets the directory path from the directory-path field
@@ -169,8 +234,8 @@ def select_subdirectory_or_go_back(sub_directory_path , n_clicks):
 
 
 
-webbrowser.open("http://127.0.0.1:8050/")
-app.run_server()
+webbrowser.open("http://127.0.0.1:8050/")       # Opens local server on a browser.
+app.run_server()                                # Runs the app.
     
     
     
