@@ -10,13 +10,13 @@ import File   # For storing files.
 class Directory:
     
     '''
-    A constructor function for Directory.
     Parameters:
         (string) path - The path of the directory.[example - "D/folder1/games" is the path for games directory]
     '''
     def __init__(self , path):
         self.path = path
         self.name = ""
+
         # Check for any problem in openning the directory. (Like - Permission denied.)
         try:
             os.listdir(self.path)
@@ -33,7 +33,7 @@ class Directory:
     Returns:
         (tuple of lists) - (directory_list , file_list)
     '''
-    def get_list(self):
+    def get_children_list(self):
         all_dirs_files = os.listdir(self.path)
         directory_list = []
         file_list = []
@@ -59,24 +59,26 @@ class Directory:
         the size of the directory , number of sub directories(recursively) and number of file(recursively). 
     
     '''
-    def size(self):
+    def get_stats(self):
         if self.path == None:
             return (0 , 0 , 0)
         size = 0
-        directory_list , file_list = self.get_list()
+        directory_list , file_list = self.get_children_list()
         size = 0
         directory_count = 0
         file_count = 0
         for directory in directory_list[1:]:
-            tup_obj = directory.size()
+            tup_obj = directory.get_stats()
+
             file_count += tup_obj[2]
+
             directory_count += tup_obj[1]
+            directory_count += 1
+
             size += tup_obj[0]
             
-            directory_count += 1
-            
         for file in file_list[1:]:
-            size += file.size()
+            size += file.get_size()
             file_count += 1
         
         return (size , directory_count , file_count)

@@ -8,7 +8,6 @@ import os
 class File:
     
     ''' 
-    A constructor function for File class.
     Parameters:
         (string) path - Path of the file in system.
     '''
@@ -24,14 +23,12 @@ class File:
             self.path = None
      
     '''
-    A funtion to get the size of the file.   
+    A funtion to get the size of the file.
     
     Return:
         Size of the file.        
     '''
-    def size(self):
+    def get_size(self):
         if self.path == None:
             return 0
-        file_object = open(self.path , "rb")
-        file_object.seek(0 , 2)
-        return file_object.tell()
+        return os.path.getsize(self.path)

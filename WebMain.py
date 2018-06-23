@@ -19,17 +19,19 @@ import webbrowser    # To open the app in a web browser.
 
 app = dash.Dash()           # Dash object.
 
-current_path = os.getcwd()           # Stores the path of the current directory whose information is displayed.
-number_of_clicks = 0         # Stores the number of clicks on go-back button to check if it is pressed or not.
+current_path = os.getcwd()  # Stores the path of the current directory.
+number_of_clicks = 0    # Stores the number of clicks on go-back button.        
 
 
 details_template = '''
 ### Directory Details
 
 Name : {}\n
-Size : {} {}\n
+Size : {:0.2f} {}\n
 Number of Sub Directories : {}\n
+Number of Sub Directories (Recursively) : {}\n
 Number of Files : {}\n
+Number of Files (Recursively) : {}\n
 '''
 
 
@@ -46,7 +48,7 @@ app.layout = html.Div(children=[
         html.Div(children=[
                 html.Button(
                         id='go-back',
-                        children="Back"),
+                        children="Up"),
                 dcc.Input(
                         id="directory-path",
                         value=os.getcwd(),
@@ -91,15 +93,15 @@ Return-
         [Input("directory-path" , "value")])
 def update_directory_graph(directory_path):
     global current_path
-    current_path = directory_path                       # Every time the graph is updated we update the current path.
+    current_path = directory_path     # Every time the graph is updated we update the current path.
     
     current_directory = Directory.Directory(directory_path)
-    subDirectories , files = current_directory.get_list()
+    subDirectories , files = current_directory.get_children_list()
     
     return dict(
                 data=[go.Bar(
                             x = [dr.name for dr in subDirectories[1:]], 
-                            y = [dr.size()[0] for dr in subDirectories[1:]],
+                            y = [dr.get_stats()[0] for dr in subDirectories[1:]],
                             )],
                 layout=go.Layout(
                             title="Sub-Directories",
@@ -122,12 +124,12 @@ Return-
 def update_files_graph(directory_path):
 
     current_directory = Directory.Directory(directory_path)
-    subDirectories , files = current_directory.get_list()
+    subDirectories , files = current_directory.get_children_list()
     
     return dict(
                 data=[go.Bar(
                             x = [file.name for file in files[1:]], 
-                            y = [file.size() for file in files[1:]],
+                            y = [file.get_size() for file in files[1:]],
                             )],
                 layout=go.Layout(
                             title="Files",
@@ -150,14 +152,17 @@ def update_directory_details(directory_path):
     global details_template
     
     current_directory = Directory.Directory(directory_path) 
-    
+    sub_directories , files = current_directory.get_children_list()
+
     dr_name = current_directory.name
-    dr_size = current_directory.size()
+    dr_size = current_directory.get_stats()
     dr_all_files = dr_size[2]
     dr_all_subdr = dr_size[1]
-    dr_size , size_type = get_size(dr_size[0])
-    
-    return details_template.format(dr_name , dr_size , size_type , dr_all_subdr , dr_all_files)
+    dr_size , size_type = get_readable_size(dr_size[0])
+    dr_files = files[0]
+    dr_subdr = sub_directories[0]
+
+    return details_template.format(dr_name , dr_size , size_type , dr_subdr , dr_all_subdr , dr_files , dr_all_files)
                 
 
 """
@@ -168,7 +173,7 @@ Parameters-
 Return -
     (int) , (string) - Size after converting to appropriate unit and the unit.
 """
-def get_size(size_byte):
+def get_readable_size(size_byte):
     unit = "bytes"
     current_size = size_byte
     if(current_size > 1024):
@@ -200,7 +205,7 @@ Return-
 def update_dropdown_options(directory_path):
     
     current_directory = Directory.Directory(directory_path)
-    subDirectories , files = current_directory.get_list()
+    subDirectories , files = current_directory.get_children_list()
     
     return [{'label': dr.name, 'value': dr.path} for dr in subDirectories[1:]]
                 
@@ -221,11 +226,11 @@ Return-
         Output("directory-path" , "value"),
         [Input("subdirectory-list" , "value"),
          Input("go-back" , "n_clicks")])
-def select_subdirectory_or_go_back(sub_directory_path , n_clicks):
+def change_directory(sub_directory_path , n_clicks):
     global current_path , number_of_clicks
     
-    if number_of_clicks == n_clicks:    # Check if back button is pressed or not ( If it is pressed then n_clicks value will change)
-        return sub_directory_path      # If back button is not pressed then dropdown item is selected. Return the path of subdirectory.
+    if number_of_clicks == n_clicks:    # Check if back button is pressed or not.
+        return sub_directory_path      
     
     number_of_clicks = n_clicks     
     os.chdir(current_path)              # Change the current directory to the current path.
