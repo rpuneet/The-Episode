@@ -58,11 +58,14 @@ app.layout = html.Div(children=[
                 html.H3(
                         children="Sub Directories"
                         ),
-                dcc.Dropdown(
+                html.Div( children = [
+                    dcc.Dropdown(
                         id="subdirectory-list",
                         value="Select"
-                        )]
-                ),
+                        )],
+                    style={"width":"50%"}
+                        )
+                ]),
         html.Div(children=[
                 dcc.Markdown( 
                             id="details" 
@@ -97,7 +100,7 @@ def update_directory_graph(directory_path):
     
     current_directory = Directory.Directory(directory_path)
     subDirectories , files = current_directory.get_children_list()
-    
+
     return dict(
                 data=[go.Bar(
                             x = [dr.name for dr in subDirectories[1:]], 
@@ -125,7 +128,7 @@ def update_files_graph(directory_path):
 
     current_directory = Directory.Directory(directory_path)
     subDirectories , files = current_directory.get_children_list()
-    
+
     return dict(
                 data=[go.Bar(
                             x = [file.name for file in files[1:]], 
